@@ -1,17 +1,186 @@
 ---
-
+import Layout from '../layouts/Layout.astro';
+import FormHeader from '../components/FormHeader.astro';
+import PersonalInfoSection from '../components/sections/PersonalInfoSection.astro';
+import ContactInfoSection from '../components/sections/ContactInfoSection.astro';
+import TechnicalInfoSection from '../components/sections/TechnicalInfoSection.astro';
+import FeeDetailsSection from '../components/sections/FeeDetailsSection.astro';
+import PhotoUploadSection from '../components/sections/PhotoUploadSection.astro';
+import DeclarationSection from '../components/sections/DeclarationSection.astro';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="TUB Programming Club - Membership Registration">
+  <main class="mx-auto max-w-2xl px-4 py-6 sm:py-10">
+    <FormHeader />
+
+    <form id="registration-form" novalidate>
+      <PersonalInfoSection />
+      <ContactInfoSection />
+      <TechnicalInfoSection />
+      <FeeDetailsSection />
+      <PhotoUploadSection />
+      <DeclarationSection />
+
+      <!-- Submit button -->
+      <div class="mt-6">
+        <button
+          type="submit"
+          class="w-full rounded-lg bg-primary-600 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition-all hover:bg-primary-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-800"
+        >
+          Submit Registration
+        </button>
+      </div>
+    </form>
+
+    <!-- Success message (hidden by default) -->
+    <div
+      id="success-message"
+      class="mt-6 hidden rounded-lg border border-primary-200 bg-primary-50 p-6 text-center"
+    >
+      <svg class="mx-auto mb-3 h-12 w-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <h3 class="text-lg font-semibold text-primary-800">Registration Submitted!</h3>
+      <p class="mt-1 text-sm text-gray-600">
+        Thank you for registering. Your application has been received successfully.
+      </p>
+    </div>
+  </main>
+
+  <script>
+    const form = document.getElementById('registration-form') as HTMLFormElement;
+    const successMessage = document.getElementById('success-message')!;
+
+    // Mobile number validation (Bangladesh: 11 digits starting with 01)
+    function isValidMobile(value: string): boolean {
+      return /^01[3-9]\d{8}$/.test(value.trim());
+    }
+
+    // Show inline error
+    function showError(input: HTMLInputElement | HTMLTextAreaElement, message: string) {
+      clearError(input);
+      input.classList.add('border-red-500');
+      input.classList.remove('border-gray-300');
+      const errorEl = document.createElement('p');
+      errorEl.className = 'text-xs text-red-500 mt-1';
+      errorEl.setAttribute('data-error', 'true');
+      errorEl.textContent = message;
+      input.parentElement?.appendChild(errorEl);
+    }
+
+    // Clear inline error
+    function clearError(input: HTMLInputElement | HTMLTextAreaElement) {
+      input.classList.remove('border-red-500');
+      input.classList.add('border-gray-300');
+      const existing = input.parentElement?.querySelector('[data-error]');
+      existing?.remove();
+    }
+
+    // Clear all errors
+    function clearAllErrors() {
+      form.querySelectorAll('[data-error]').forEach((el) => el.remove());
+      form.querySelectorAll('.border-red-500').forEach((el) => {
+        el.classList.remove('border-red-500');
+        el.classList.add('border-gray-300');
+      });
+    }
+
+    // Validate form
+    function validateForm(): boolean {
+      clearAllErrors();
+      let isValid = true;
+      let firstInvalid: HTMLElement | null = null;
+
+      // Validate required text/email/tel/date inputs
+      const requiredInputs = form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        'input[required]:not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea[required]'
+      );
+
+      requiredInputs.forEach((input) => {
+        if (!input.value.trim()) {
+          showError(input, 'This field is required');
+          isValid = false;
+          if (!firstInvalid) firstInvalid = input;
+        }
+      });
+
+      // Validate mobile number format
+      const mobileInput = form.querySelector<HTMLInputElement>('input[name="mobile"]');
+      if (mobileInput && mobileInput.value.trim() && !isValidMobile(mobileInput.value)) {
+        showError(mobileInput, 'Enter a valid BD mobile number (e.g. 01712345678)');
+        isValid = false;
+        if (!firstInvalid) firstInvalid = mobileInput;
+      }
+
+      // Validate email format
+      const emailInput = form.querySelector<HTMLInputElement>('input[name="email"]');
+      if (emailInput && emailInput.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+        showError(emailInput, 'Enter a valid email address');
+        isValid = false;
+        if (!firstInvalid) firstInvalid = emailInput;
+      }
+
+      // Validate required radio groups (skill_level, payment_method)
+      const requiredRadioGroups = ['skill_level', 'payment_method'];
+      requiredRadioGroups.forEach((name) => {
+        const radios = form.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`);
+        const checked = Array.from(radios).some((r) => r.checked);
+        if (!checked) {
+          // Add error near the fieldset
+          const fieldset = radios[0]?.closest('fieldset');
+          if (fieldset) {
+            const errorEl = document.createElement('p');
+            errorEl.className = 'text-xs text-red-500 mt-1';
+            errorEl.setAttribute('data-error', 'true');
+            errorEl.textContent = 'Please select an option';
+            fieldset.appendChild(errorEl);
+            isValid = false;
+            if (!firstInvalid) firstInvalid = fieldset as HTMLElement;
+          }
+        }
+      });
+
+      // Validate declaration checkbox
+      const declaration = form.querySelector<HTMLInputElement>('input[name="declaration_agreed"]');
+      if (declaration && !declaration.checked) {
+        const label = declaration.closest('label');
+        if (label) {
+          const errorEl = document.createElement('p');
+          errorEl.className = 'text-xs text-red-500 mt-1';
+          errorEl.setAttribute('data-error', 'true');
+          errorEl.textContent = 'You must agree to the declaration';
+          label.parentElement?.appendChild(errorEl);
+          isValid = false;
+          if (!firstInvalid) firstInvalid = label as HTMLElement;
+        }
+      }
+
+      // Scroll to first invalid field
+      if (firstInvalid) {
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      return isValid;
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      if (!validateForm()) return;
+
+      // For now, just show the success message (backend not connected yet)
+      form.classList.add('hidden');
+      successMessage.classList.remove('hidden');
+      successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    // Clear individual field errors on input
+    form.addEventListener('input', (e) => {
+      const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        clearError(target);
+      }
+    });
+  </script>
+</Layout>

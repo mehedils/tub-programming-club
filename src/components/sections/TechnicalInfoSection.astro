@@ -1,0 +1,53 @@
+---
+import FormSection from '../ui/FormSection.astro';
+import CheckboxGroup from '../ui/CheckboxGroup.astro';
+import RadioGroup from '../ui/RadioGroup.astro';
+
+const languages = [
+  { value: 'c', label: 'C' },
+  { value: 'cpp', label: 'C++' },
+  { value: 'java', label: 'Java' },
+  { value: 'python', label: 'Python' },
+  { value: 'javascript', label: 'JavaScript' },
+];
+
+const skillLevels = [
+  { value: 'beginner', label: 'Beginner' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'advanced', label: 'Advanced' },
+];
+
+const areas = [
+  { value: 'competitive_programming', label: 'Competitive Programming' },
+  { value: 'web_development', label: 'Web Development' },
+  { value: 'app_development', label: 'App Development' },
+  { value: 'ai_ml', label: 'AI / Machine Learning' },
+  { value: 'cyber_security', label: 'Cyber Security' },
+  { value: 'robotics_iot', label: 'Robotics / IoT' },
+];
+---
+
+<FormSection title="Technical Information">
+  <div class="space-y-5">
+    <CheckboxGroup
+      label="Programming Languages Known"
+      name="languages"
+      options={languages}
+      hasOther
+    />
+
+    <RadioGroup
+      label="Skill Level"
+      name="skill_level"
+      options={skillLevels}
+      required
+    />
+
+    <CheckboxGroup
+      label="Areas of Interest"
+      name="areas"
+      options={areas}
+      hasOther
+    />
+  </div>
+</FormSection>

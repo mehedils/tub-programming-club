@@ -1,0 +1,45 @@
+---
+interface Props {
+  label: string;
+  name: string;
+  type?: 'text' | 'email' | 'tel' | 'date' | 'number';
+  required?: boolean;
+  placeholder?: string;
+  id?: string;
+  readonly?: boolean;
+  value?: string;
+}
+
+const {
+  label,
+  name,
+  type = 'text',
+  required = false,
+  placeholder = '',
+  id = name,
+  readonly = false,
+  value = '',
+} = Astro.props;
+---
+
+<div>
+  <label for={id} class="mb-1 block text-sm font-medium text-gray-700">
+    {label}
+    {required && <span class="text-red-500">*</span>}
+  </label>
+  <input
+    type={type}
+    id={id}
+    name={name}
+    required={required}
+    placeholder={placeholder}
+    readonly={readonly}
+    value={value}
+    class:list={[
+      'w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors',
+      'placeholder:text-gray-400',
+      'focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500',
+      readonly && 'cursor-not-allowed bg-gray-50 text-gray-500',
+    ]}
+  />
+</div>

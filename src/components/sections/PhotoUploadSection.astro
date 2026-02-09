@@ -1,0 +1,16 @@
+---
+import FormSection from '../ui/FormSection.astro';
+import FileUpload from '../ui/FileUpload.astro';
+---
+
+<FormSection title="Photo">
+  <FileUpload
+    label="Upload your photo"
+    name="photo"
+    accept="image/jpeg,image/png"
+    required
+  />
+  <p class="mt-2 text-xs text-gray-500">
+    Please upload a recent passport-sized photo (JPG or PNG format).
+  </p>
+</FormSection>
