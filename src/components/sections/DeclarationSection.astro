@@ -1,0 +1,43 @@
+---
+import FormSection from '../ui/FormSection.astro';
+
+const today = new Date().toISOString().split('T')[0];
+---
+
+<FormSection title="Declaration">
+  <div class="space-y-4">
+    <!-- Declaration text -->
+    <div class="rounded-md bg-gray-50 p-3 text-sm leading-relaxed text-gray-600">
+      <p>
+        I hereby declare that all the information provided above is true and correct.
+        I agree to follow all rules &amp; regulations of the CSE Programming Club and
+        to pay the monthly membership fee regularly.
+      </p>
+    </div>
+
+    <!-- Agreement checkbox -->
+    <label class="flex items-start gap-3 cursor-pointer">
+      <input
+        type="checkbox"
+        name="declaration_agreed"
+        required
+        class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+      />
+      <span class="text-sm text-gray-700">
+        I agree to the above declaration <span class="text-red-500">*</span>
+      </span>
+    </label>
+
+    <!-- Date (auto-filled) -->
+    <div>
+      <label class="mb-1 block text-sm font-medium text-gray-700">Date</label>
+      <input
+        type="date"
+        name="declaration_date"
+        value={today}
+        readonly
+        class="w-full cursor-not-allowed rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-500 shadow-sm sm:w-48"
+      />
+    </div>
+  </div>
+</FormSection>

@@ -1,0 +1,70 @@
+---
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  label: string;
+  name: string;
+  options: Option[];
+  hasOther?: boolean;
+}
+
+const { label, name, options, hasOther = false } = Astro.props;
+---
+
+<fieldset>
+  <legend class="mb-2 block text-sm font-medium text-gray-700">{label}</legend>
+  <div class="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+    {
+      options.map((option) => (
+        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+          <input
+            type="checkbox"
+            name={name}
+            value={option.value}
+            class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+          />
+          {option.label}
+        </label>
+      ))
+    }
+    {
+      hasOther && (
+        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer col-span-2 sm:col-span-3">
+          <input
+            type="checkbox"
+            name={name}
+            value="other"
+            class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            data-other-toggle={name}
+          />
+          Others:
+          <input
+            type="text"
+            name={`${name}_other`}
+            placeholder="Please specify"
+            disabled
+            data-other-input={name}
+            class="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm transition-colors placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-gray-50"
+          />
+        </label>
+      )
+    }
+  </div>
+</fieldset>
+
+<script>
+  document.querySelectorAll<HTMLInputElement>('[data-other-toggle]').forEach((checkbox) => {
+    const name = checkbox.dataset.otherToggle!;
+    const input = document.querySelector<HTMLInputElement>(`[data-other-input="${name}"]`);
+    if (!input) return;
+
+    checkbox.addEventListener('change', () => {
+      input.disabled = !checkbox.checked;
+      if (!checkbox.checked) input.value = '';
+      if (checkbox.checked) input.focus();
+    });
+  });
+</script>

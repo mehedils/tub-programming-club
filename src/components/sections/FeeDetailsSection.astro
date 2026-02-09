@@ -1,0 +1,65 @@
+---
+import FormSection from '../ui/FormSection.astro';
+import RadioGroup from '../ui/RadioGroup.astro';
+import TextInput from '../ui/TextInput.astro';
+
+const paymentMethods = [
+  { value: 'cash', label: 'Cash' },
+  { value: 'bkash', label: 'Bkash' },
+  { value: 'nagad', label: 'Nagad' },
+  { value: 'rocket', label: 'Rocket' },
+];
+---
+
+<FormSection title="Membership Fee Details">
+  <!-- Fee info display -->
+  <div class="mb-4 rounded-md bg-primary-50 p-3">
+    <div class="flex items-center gap-2 text-sm text-gray-700">
+      <svg class="h-4 w-4 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+      </svg>
+      <span>Registration Fee (One-Time): <strong>100 Tk</strong></span>
+    </div>
+    <div class="mt-1 flex items-center gap-2 text-sm text-gray-700">
+      <svg class="h-4 w-4 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+      </svg>
+      <span>Monthly Membership Fee: <strong>50 Tk</strong> per month</span>
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <RadioGroup
+      label="Payment Method"
+      name="payment_method"
+      options={paymentMethods}
+      required
+      hasOther
+    />
+
+    <!-- Transaction ID (conditionally visible) -->
+    <div id="transaction-id-wrapper" class="hidden">
+      <TextInput
+        label="Transaction ID"
+        name="transaction_id"
+        placeholder="Enter your transaction ID"
+      />
+    </div>
+  </div>
+</FormSection>
+
+<script>
+  const paymentRadios = document.querySelectorAll<HTMLInputElement>('input[name="payment_method"]');
+  const txWrapper = document.getElementById('transaction-id-wrapper');
+
+  const digitalMethods = ['bkash', 'nagad', 'rocket'];
+
+  paymentRadios.forEach((radio) => {
+    radio.addEventListener('change', () => {
+      if (txWrapper) {
+        const isDigital = digitalMethods.includes(radio.value);
+        txWrapper.classList.toggle('hidden', !isDigital);
+      }
+    });
+  });
+</script>

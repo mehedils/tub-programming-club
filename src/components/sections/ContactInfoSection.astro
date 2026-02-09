@@ -1,0 +1,15 @@
+---
+import FormSection from '../ui/FormSection.astro';
+import TextInput from '../ui/TextInput.astro';
+import TextArea from '../ui/TextArea.astro';
+---
+
+<FormSection title="Contact Information">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <TextInput label="Mobile Number" name="mobile" type="tel" required placeholder="01XXXXXXXXX" />
+    <TextInput label="Email" name="email" type="email" required placeholder="your@email.com" />
+  </div>
+  <div class="mt-4">
+    <TextArea label="Present Address" name="address" required placeholder="Enter your current address" rows={2} />
+  </div>
+</FormSection>
