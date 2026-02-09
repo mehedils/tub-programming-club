@@ -1,0 +1,290 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FormHeader from '../components/FormHeader.astro';
+---
+
+<Layout title="Registration Status - TUB Programming Club">
+  <main class="mx-auto max-w-2xl px-4 py-6 sm:py-10">
+    <FormHeader />
+
+    <!-- === STATUS DISPLAY (shown when tracking param exists) === -->
+    <div id="status-view" class="mt-6 hidden overflow-hidden rounded-lg bg-white shadow-md">
+      <!-- Loading state -->
+      <div id="status-loading" class="px-6 py-12 text-center">
+        <svg class="mx-auto mb-3 h-10 w-10 animate-spin text-primary-600" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <p class="text-sm text-gray-500">Fetching your registration status...</p>
+      </div>
+
+      <!-- Status result (hidden until loaded) -->
+      <div id="status-result" class="hidden">
+        <div id="status-header" class="px-6 py-8 text-center">
+          <div id="status-icon"></div>
+          <h2 id="status-title" class="text-2xl font-bold"></h2>
+          <p id="status-subtitle" class="mt-2 text-sm text-gray-600"></p>
+        </div>
+
+        <div class="px-6 py-6">
+          <div class="rounded-lg border border-primary-200 bg-primary-50/50 p-5 text-center">
+            <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Your Tracking Number</p>
+            <p id="tracking-display" class="mt-2 text-3xl font-bold tracking-wide text-primary-800"></p>
+          </div>
+
+          <div id="status-badge-wrapper" class="mt-4 text-center">
+            <span id="status-badge" class="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold"></span>
+          </div>
+
+          <div class="mt-5 space-y-3">
+            <div class="flex items-start gap-3">
+              <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+              </svg>
+              <p id="status-message" class="text-sm text-gray-600"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-gray-100 bg-gray-50 px-6 py-4">
+          <a href="/" class="inline-flex items-center gap-2 text-sm font-medium text-primary-600 transition-colors hover:text-primary-800">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+          </a>
+        </div>
+      </div>
+
+      <!-- Not found state -->
+      <div id="status-not-found" class="hidden">
+        <div class="px-6 py-8 text-center">
+          <svg class="mx-auto mb-4 h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <h2 class="text-2xl font-bold text-gray-800">No Registration Found</h2>
+          <p id="not-found-text" class="mt-2 text-sm text-gray-600"></p>
+          <p class="mt-1 text-sm text-gray-500">Please check the Student ID and try again.</p>
+        </div>
+        <div class="flex gap-4 border-t border-gray-100 bg-gray-50 px-6 py-4">
+          <a href="/status" class="inline-flex items-center gap-2 text-sm font-medium text-primary-600 transition-colors hover:text-primary-800">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            Try Again
+          </a>
+          <a href="/" class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-gray-700">
+            Back to Home
+          </a>
+        </div>
+      </div>
+
+      <!-- Error state -->
+      <div id="status-error" class="hidden">
+        <div class="px-6 py-8 text-center">
+          <svg class="mx-auto mb-4 h-16 w-16 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+          <h2 class="text-2xl font-bold text-gray-800">Something Went Wrong</h2>
+          <p class="mt-2 text-sm text-gray-600">Unable to fetch registration status. Please try again later.</p>
+        </div>
+        <div class="border-t border-gray-100 bg-gray-50 px-6 py-4">
+          <a href="/status" class="inline-flex items-center gap-2 text-sm font-medium text-primary-600 transition-colors hover:text-primary-800">
+            Try Again
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- === LOOKUP FORM (shown when no tracking param) === -->
+    <div id="lookup-view" class="mt-6 hidden overflow-hidden rounded-lg bg-white shadow-md">
+      <div class="bg-primary-50 px-6 py-8 text-center">
+        <svg class="mx-auto mb-4 h-16 w-16 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <h2 class="text-2xl font-bold text-primary-800">Check Registration Status</h2>
+        <p class="mt-2 text-sm text-gray-600">
+          Enter your Student ID to check your membership application status.
+        </p>
+      </div>
+
+      <div class="px-6 py-6">
+        <form id="lookup-form" class="space-y-4">
+          <div>
+            <label for="student-id" class="mb-1 block text-sm font-medium text-gray-700">
+              Student ID <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="student-id"
+              name="student_id"
+              required
+              placeholder="Enter your Student ID"
+              class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            />
+            <p id="lookup-error" class="mt-1 hidden text-xs text-red-500"></p>
+          </div>
+          <button
+            type="submit"
+            class="w-full rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition-all hover:bg-primary-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-primary-800"
+          >
+            Check Status
+          </button>
+        </form>
+      </div>
+
+      <div class="border-t border-gray-100 bg-gray-50 px-6 py-4">
+        <a href="/" class="inline-flex items-center gap-2 text-sm font-medium text-primary-600 transition-colors hover:text-primary-800">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Back to Home
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    import PocketBase from 'pocketbase';
+
+    const pb = new PocketBase('https://admin.tubprogramming.club.winrysoft.com');
+
+    // Read tracking param from the URL client-side
+    const params = new URLSearchParams(window.location.search);
+    const studentId = params.get('tracking')?.trim() || '';
+
+    const statusView = document.getElementById('status-view')!;
+    const lookupView = document.getElementById('lookup-view')!;
+
+    if (studentId) {
+      // Show the status view and fetch data
+      statusView.classList.remove('hidden');
+      fetchStatus(studentId);
+    } else {
+      // Show the lookup form
+      lookupView.classList.remove('hidden');
+    }
+
+    async function fetchStatus(id: string) {
+      const loadingEl = document.getElementById('status-loading')!;
+      const resultEl = document.getElementById('status-result')!;
+      const notFoundEl = document.getElementById('status-not-found')!;
+      const errorEl = document.getElementById('status-error')!;
+
+      try {
+        const records = await pb.collection('tracking').getList(1, 1, {
+          filter: `student_id = "${id}"`,
+        });
+
+        loadingEl.classList.add('hidden');
+
+        if (records.items.length === 0) {
+          const notFoundText = document.getElementById('not-found-text')!;
+          notFoundText.innerHTML = `No membership registration was found for Student ID: <strong>${id}</strong>`;
+          notFoundEl.classList.remove('hidden');
+          return;
+        }
+
+        const record = records.items[0];
+        const status = record.status || 'pending';
+
+        // Set the tracking number display
+        document.getElementById('tracking-display')!.textContent = id;
+
+        renderStatus(status);
+        resultEl.classList.remove('hidden');
+      } catch (err) {
+        console.error('Failed to fetch status:', err);
+        loadingEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    function renderStatus(status: string) {
+      const header = document.getElementById('status-header')!;
+      const icon = document.getElementById('status-icon')!;
+      const title = document.getElementById('status-title')!;
+      const subtitle = document.getElementById('status-subtitle')!;
+      const badge = document.getElementById('status-badge')!;
+      const message = document.getElementById('status-message')!;
+
+      const configs: Record<string, {
+        bg: string; iconSvg: string; iconColor: string;
+        titleText: string; titleColor: string; subtitleText: string;
+        badgeClasses: string; badgeLabel: string;
+        messageText: string;
+      }> = {
+        pending: {
+          bg: 'bg-yellow-50',
+          iconSvg: '<svg class="mx-auto mb-4 h-16 w-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+          iconColor: 'text-yellow-500',
+          titleText: 'Review Pending',
+          titleColor: 'text-yellow-800',
+          subtitleText: 'Your membership application is currently being reviewed.',
+          badgeClasses: 'bg-yellow-100 text-yellow-800',
+          badgeLabel: 'Pending Review',
+          messageText: 'Your application is under review. You will be notified once it has been processed. Please keep your tracking number safe.',
+        },
+        approved: {
+          bg: 'bg-primary-50',
+          iconSvg: '<svg class="mx-auto mb-4 h-16 w-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+          iconColor: 'text-primary-600',
+          titleText: 'Membership Approved!',
+          titleColor: 'text-primary-800',
+          subtitleText: 'Congratulations! Your membership has been approved.',
+          badgeClasses: 'bg-green-100 text-green-800',
+          badgeLabel: 'Approved',
+          messageText: 'Welcome to TUB Programming Club! Your membership is now active. Please contact the club administration for your membership card.',
+        },
+        rejected: {
+          bg: 'bg-red-50',
+          iconSvg: '<svg class="mx-auto mb-4 h-16 w-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+          iconColor: 'text-red-500',
+          titleText: 'Application Rejected',
+          titleColor: 'text-red-800',
+          subtitleText: 'Unfortunately, your membership application was not approved.',
+          badgeClasses: 'bg-red-100 text-red-800',
+          badgeLabel: 'Rejected',
+          messageText: 'Your application has been reviewed and was not approved at this time. Please contact the club administration for more details.',
+        },
+      };
+
+      const config = configs[status] || configs.pending;
+
+      header.className = `px-6 py-8 text-center ${config.bg}`;
+      icon.innerHTML = config.iconSvg;
+      icon.querySelector('svg')?.classList.add(config.iconColor);
+      title.textContent = config.titleText;
+      title.className = `text-2xl font-bold ${config.titleColor}`;
+      subtitle.textContent = config.subtitleText;
+      badge.textContent = config.badgeLabel;
+      badge.className = `inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold ${config.badgeClasses}`;
+      message.textContent = config.messageText;
+    }
+
+    // Lookup form logic
+    const lookupForm = document.getElementById('lookup-form') as HTMLFormElement | null;
+
+    if (lookupForm) {
+      const input = lookupForm.querySelector<HTMLInputElement>('input[name="student_id"]')!;
+      const lookupError = document.getElementById('lookup-error')!;
+
+      lookupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const value = input.value.trim();
+
+        if (!value) {
+          lookupError.textContent = 'Please enter your Student ID';
+          lookupError.classList.remove('hidden');
+          return;
+        }
+
+        window.location.href = `/status?tracking=${encodeURIComponent(value)}`;
+      });
+
+      input.addEventListener('input', () => {
+        lookupError.classList.add('hidden');
+      });
+    }
+  </script>
+</Layout>

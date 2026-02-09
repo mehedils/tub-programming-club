@@ -32,31 +32,37 @@ import DeclarationSection from '../components/sections/DeclarationSection.astro'
       </div>
     </form>
 
-    <!-- Success message (hidden by default) -->
+    <!-- General error message (hidden by default) -->
     <div
-      id="success-message"
-      class="mt-6 hidden rounded-lg border border-primary-200 bg-primary-50 p-6 text-center"
+      id="error-message"
+      class="mt-6 hidden rounded-lg border border-red-200 bg-red-50 p-6 text-center"
     >
-      <svg class="mx-auto mb-3 h-12 w-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      <svg class="mx-auto mb-3 h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
       </svg>
-      <h3 class="text-lg font-semibold text-primary-800">Registration Submitted!</h3>
-      <p class="mt-1 text-sm text-gray-600">
-        Thank you for registering. Your application has been received successfully.
+      <h3 class="text-lg font-semibold text-red-800">Submission Failed</h3>
+      <p id="error-message-text" class="mt-1 text-sm text-gray-600">
+        Something went wrong. Please try again.
       </p>
     </div>
   </main>
 
   <script>
+    import PocketBase from 'pocketbase';
+
+    const pb = new PocketBase('https://admin.tubprogramming.club.winrysoft.com');
+
     const form = document.getElementById('registration-form') as HTMLFormElement;
-    const successMessage = document.getElementById('success-message')!;
+    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const errorMessage = document.getElementById('error-message')!;
+    const errorMessageText = document.getElementById('error-message-text')!;
 
     // Mobile number validation (Bangladesh: 11 digits starting with 01)
     function isValidMobile(value: string): boolean {
       return /^01[3-9]\d{8}$/.test(value.trim());
     }
 
-    // Show inline error
+    // Show inline error on a specific input
     function showError(input: HTMLInputElement | HTMLTextAreaElement, message: string) {
       clearError(input);
       input.classList.add('border-red-500');
@@ -68,7 +74,7 @@ import DeclarationSection from '../components/sections/DeclarationSection.astro'
       input.parentElement?.appendChild(errorEl);
     }
 
-    // Clear inline error
+    // Clear inline error from a specific input
     function clearError(input: HTMLInputElement | HTMLTextAreaElement) {
       input.classList.remove('border-red-500');
       input.classList.add('border-gray-300');
@@ -76,16 +82,24 @@ import DeclarationSection from '../components/sections/DeclarationSection.astro'
       existing?.remove();
     }
 
-    // Clear all errors
+    // Clear all errors across the form
     function clearAllErrors() {
       form.querySelectorAll('[data-error]').forEach((el) => el.remove());
       form.querySelectorAll('.border-red-500').forEach((el) => {
         el.classList.remove('border-red-500');
         el.classList.add('border-gray-300');
       });
+      errorMessage.classList.add('hidden');
     }
 
-    // Validate form
+    // Show general error banner
+    function showGeneralError(message: string) {
+      errorMessageText.textContent = message;
+      errorMessage.classList.remove('hidden');
+      errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Validate form before submission
     function validateForm(): boolean {
       clearAllErrors();
       let isValid = true;
@@ -126,7 +140,6 @@ import DeclarationSection from '../components/sections/DeclarationSection.astro'
         const radios = form.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`);
         const checked = Array.from(radios).some((r) => r.checked);
         if (!checked) {
-          // Add error near the fieldset
           const fieldset = radios[0]?.closest('fieldset');
           if (fieldset) {
             const errorEl = document.createElement('p');
@@ -163,16 +176,146 @@ import DeclarationSection from '../components/sections/DeclarationSection.astro'
       return isValid;
     }
 
+    // Collect checked checkbox values as a JSON array
+    function getCheckedValues(name: string): string[] {
+      const checkboxes = form.querySelectorAll<HTMLInputElement>(`input[name="${name}"]:checked`);
+      return Array.from(checkboxes)
+        .map((cb) => cb.value)
+        .filter((v) => v !== 'other');
+    }
+
+    // Get the value of a selected radio button
+    function getRadioValue(name: string): string {
+      const radio = form.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`);
+      return radio?.value || '';
+    }
+
+    // Get text input value by name
+    function getInputValue(name: string): string {
+      const input = form.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+        `input[name="${name}"], textarea[name="${name}"]`
+      );
+      return input?.value.trim() || '';
+    }
+
+    // Build FormData for PocketBase submission
+    function buildFormData(): FormData {
+      const formData = new FormData();
+
+      // Personal information
+      formData.append('name', getInputValue('name'));
+      formData.append('student_id', getInputValue('student_id'));
+      formData.append('department', getInputValue('department'));
+      formData.append('batch_or_semester', getInputValue('batch_or_semester'));
+      formData.append('date_of_birth', getInputValue('date_of_birth'));
+
+      // Contact information
+      formData.append('mobile', getInputValue('mobile'));
+      formData.append('email', getInputValue('email'));
+      formData.append('address', getInputValue('address'));
+
+      // Technical information - JSON arrays
+      formData.append('languages', JSON.stringify(getCheckedValues('languages')));
+      formData.append('languages_other', getInputValue('languages_other'));
+      formData.append('skill_level', getRadioValue('skill_level'));
+      formData.append('areas', JSON.stringify(getCheckedValues('areas')));
+      formData.append('areas_other', getInputValue('areas_other'));
+
+      // Payment information
+      const paymentMethod = getRadioValue('payment_method');
+      if (paymentMethod === 'other') {
+        formData.append('payment_method_other', getInputValue('payment_method_other'));
+      } else {
+        formData.append('payment_method', paymentMethod);
+      }
+      formData.append('transaction_id', getInputValue('transaction_id'));
+
+      // Photo
+      const photoInput = form.querySelector<HTMLInputElement>('input[name="photo"]');
+      if (photoInput?.files?.[0]) {
+        formData.append('photo', photoInput.files[0]);
+      }
+
+      // Declaration
+      const declarationCheckbox = form.querySelector<HTMLInputElement>('input[name="declaration_agreed"]');
+      formData.append('declaration_agreed', declarationCheckbox?.checked ? 'true' : 'false');
+
+      return formData;
+    }
+
+    // Handle PocketBase validation errors and show inline messages
+    function handlePocketBaseErrors(error: any) {
+      if (error?.response?.data) {
+        const fieldErrors = error.response.data;
+        let firstInvalid: HTMLElement | null = null;
+
+        for (const [field, errorData] of Object.entries(fieldErrors)) {
+          const message = (errorData as any)?.message || 'Invalid value';
+          const input = form.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+            `input[name="${field}"], textarea[name="${field}"]`
+          );
+
+          if (input) {
+            showError(input, message);
+            if (!firstInvalid) firstInvalid = input;
+          }
+        }
+
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          // If no specific field found, show a general error
+          const messages = Object.entries(fieldErrors)
+            .map(([field, data]) => `${field}: ${(data as any)?.message}`)
+            .join(', ');
+          showGeneralError(messages || 'Validation failed. Please check your input.');
+        }
+      } else if (error?.message) {
+        // Check for unique constraint / duplicate errors
+        const msg = error.message.toLowerCase();
+        if (msg.includes('unique') || msg.includes('duplicate')) {
+          showGeneralError('A registration with this Student ID, Email, or Mobile number already exists.');
+        } else {
+          showGeneralError(error.message);
+        }
+      } else {
+        showGeneralError('Something went wrong. Please try again later.');
+      }
+    }
+
+    // Set loading state on submit button
+    function setLoading(loading: boolean) {
+      submitBtn.disabled = loading;
+      submitBtn.textContent = loading ? 'Submitting...' : 'Submit Registration';
+      if (loading) {
+        submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+      } else {
+        submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+      }
+    }
+
     // Handle form submission
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       if (!validateForm()) return;
 
-      // For now, just show the success message (backend not connected yet)
-      form.classList.add('hidden');
-      successMessage.classList.remove('hidden');
-      successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setLoading(true);
+      errorMessage.classList.add('hidden');
+
+      try {
+        const formData = buildFormData();
+        await pb.collection('members').create(formData);
+
+        // Redirect to status page with student ID as tracking number
+        const studentId = getInputValue('student_id');
+        window.location.href = `/status?tracking=${encodeURIComponent(studentId)}`;
+        return;
+      } catch (error: any) {
+        handlePocketBaseErrors(error);
+      } finally {
+        setLoading(false);
+      }
     });
 
     // Clear individual field errors on input

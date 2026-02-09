@@ -5,10 +5,10 @@ import TextInput from '../ui/TextInput.astro';
 
 <FormSection title="Personal Information">
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-    <TextInput label="Full Name" name="full_name" required placeholder="Enter your full name" />
+    <TextInput label="Full Name" name="name" required placeholder="Enter your full name" />
     <TextInput label="Student ID" name="student_id" required placeholder="Enter your student ID" />
     <TextInput label="Department" name="department" required placeholder="e.g. CSE, EEE, BBA" />
-    <TextInput label="Batch / Semester" name="batch_semester" required placeholder="e.g. 10th Batch / 5th Semester" />
+    <TextInput label="Batch / Semester" name="batch_or_semester" required placeholder="e.g. 10th Batch / 5th Semester" />
     <TextInput label="Date of Birth" name="date_of_birth" type="date" required />
   </div>
 </FormSection>

@@ -4,10 +4,10 @@ import RadioGroup from '../ui/RadioGroup.astro';
 import TextInput from '../ui/TextInput.astro';
 
 const paymentMethods = [
-  { value: 'cash', label: 'Cash' },
-  { value: 'bkash', label: 'Bkash' },
-  { value: 'nagad', label: 'Nagad' },
-  { value: 'rocket', label: 'Rocket' },
+  { value: 'Cash', label: 'Cash' },
+  { value: 'bKash', label: 'bKash' },
+  { value: 'Nagad', label: 'Nagad' },
+  { value: 'Rocket', label: 'Rocket' },
 ];
 ---
 
@@ -52,7 +52,7 @@ const paymentMethods = [
   const paymentRadios = document.querySelectorAll<HTMLInputElement>('input[name="payment_method"]');
   const txWrapper = document.getElementById('transaction-id-wrapper');
 
-  const digitalMethods = ['bkash', 'nagad', 'rocket'];
+  const digitalMethods = ['bKash', 'Nagad', 'Rocket'];
 
   paymentRadios.forEach((radio) => {
     radio.addEventListener('change', () => {
